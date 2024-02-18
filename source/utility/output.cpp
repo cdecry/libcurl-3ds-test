@@ -1,5 +1,23 @@
 #include "output.h"
 
+void Output::setRowStart(int value) {
+    this->rowStart = value;
+}
+
+int Output::getRowStart() {
+    return this->rowStart;
+}
+
+std::vector<std::string> splitMessageIntoLines(const std::string& message) {
+    std::vector<std::string> lines;
+    std::istringstream iss(message);
+    std::string line;
+    while (std::getline(iss, line)) {
+        lines.push_back(line);
+    }
+    return lines;
+}
+
 Output::Output() : inReverse(false) {
 	this->clear();
 }
@@ -10,7 +28,7 @@ Output::~Output() {
 
 void Output::print(std::string message){
 	this->messageLog.push_back(message);
-	if (this->messageLog.size() > 29){
+	if (this->messageLog.size() > CONSOLE_MAX_ROW){
 		this->messageLog.erase(this->messageLog.begin());
 	}
 	this->printAll();
@@ -23,17 +41,34 @@ void Output::clear() {
 }
 
 void Output::printAll(){
-	//Max rows count = 29.
 	consoleClear();
+    int currentRow = rowStart;
 	if (this->inReverse){
-		for (size_t i = 0; i < this->messageLog.size(); i++){
-			text(i, 0, this->messageLog[this->messageLog.size() - i - 1]);
-		}
+        for (int i = this->messageLog.size() - 1; i >= 0; --i) {
+            // Split the message into multiple lines
+            std::vector<std::string> lines = splitMessageIntoLines(this->messageLog[i]);
+            
+            // Print each line of the message
+            for (const auto& line : lines) {
+                text(currentRow, 0, line);
+                ++currentRow;
+                if (currentRow >= CONSOLE_MAX_ROW) // Check if reached the top row
+                    return;
+            }
+        }
 	}
 	else {
-		for (size_t i = 0; i < this->messageLog.size(); i++){
-			text(i, 0, this->messageLog[i]);
-		}
+        for (int i = 0; i < (int)this->messageLog.size(); ++i) {
+            std::vector<std::string> lines = splitMessageIntoLines(this->messageLog[i]);
+            for (int j = 0; j < (int)lines.size(); ++j) {
+                if (currentRow + 1 >= CONSOLE_MAX_ROW) // Check if reached the maximum row
+                    return;
+                if (currentRow > 0) {
+                    text(currentRow, 1, lines[j]);
+                }
+                ++currentRow;
+            }
+        }
 	}
 }
 

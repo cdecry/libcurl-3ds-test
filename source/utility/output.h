@@ -15,6 +15,9 @@ private:
 public:
 	Output();
 	~Output();
+    int rowStart = 1;
+    void setRowStart(int value);
+    int getRowStart();
 	void print(std::string message);
 	void clear();
 	void printAll();
