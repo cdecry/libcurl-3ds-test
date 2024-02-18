@@ -1,1 +1,4 @@
 **/.DS_Store
+build/
+test-curl.3dsx
+test-curl.elf
