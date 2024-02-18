@@ -31,15 +31,7 @@ void failExit(const char *fmt, ...) {
 	}
 }
 
-int main() {
-	gfxInitDefault();
-	PrintConsole bottomScreen;
-	consoleSelect(consoleInit(GFX_BOTTOM, &bottomScreen));
-	
-	Output output;
-	Engine::Core core(&output);
-
-    // init socket service
+void initSocketService() {
     int ret;
     SOC_buffer = (u32*)memalign(SOC_ALIGN, SOC_BUFFERSIZE);
 
@@ -47,10 +39,9 @@ int main() {
 		failExit("memalign: failed to allocate\n");
 	if ((ret = socInit(SOC_buffer, SOC_BUFFERSIZE)) != 0)
     	failExit("socInit: 0x%08X\n", (unsigned int)ret);
+}
 
-    static std::string test_url = "https://catfact.ninja/fact";
-    output.print("Sending HTTP Request...");
-
+void sendHTTPRequest(std::string test_url, Output output) {
     CURL *curl;
     CURLcode result;
     curl = curl_easy_init();
@@ -58,19 +49,33 @@ int main() {
 
     if (curl == NULL) {
         output.print("HTTP request failed.");
+        return;
     }
-    else {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_URL, test_url.c_str());
-        result = curl_easy_perform(curl);
 
-        if (result != CURLE_OK) {
-            debug << "Error: " << curl_easy_strerror(result);
-            output.print(debug.str());
-        }
-        else
-            curl_easy_cleanup(curl);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(curl, CURLOPT_URL, test_url.c_str());
+
+    result = curl_easy_perform(curl);
+
+    if (result != CURLE_OK) {
+        debug << "Error: " << curl_easy_strerror(result);
+        output.print(debug.str());
+        return;
     }
+    
+    curl_easy_cleanup(curl);
+}
+
+int main() {
+	gfxInitDefault();
+	PrintConsole bottomScreen;
+	consoleSelect(consoleInit(GFX_BOTTOM, &bottomScreen));
+	
+	Output output;
+	Engine::Core core(&output);
+    
+    initSocketService();
+    sendHTTPRequest("https://example.com/", output);
 
 	while (aptMainLoop()){
 		hidScanInput();
