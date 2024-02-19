@@ -43,8 +43,6 @@ void HTMLParser::parseElement(HTMLElement* parent) {
                 continue;
             }
             else if (parent->tag == "script") {
-                // while (index +8 < html.size() && html.substr(index, 9) != "</script>") index++;
-                // continue;
                 size_t found = html.find("</script>", index);
                 if (found!=std::string::npos) {
                     index = found;
@@ -105,14 +103,24 @@ std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
         }
         while (index < html.size() && html[index] != '=') index++;
         while (index < html.size() && (html[index] == '=' || isspace(html[index]))) index++;
-        char quote = html[index];
-        index++;
-        while (index < html.size() && html[index] != quote) {
+        
+        char quote = ' ';
+        if (html[index] == '\"' || html[index] == '\'') {
+            quote = html[index];
+            index++;
+        }
+        
+        // <div id="smoke">
+        // <div id=smoke>
+        // <div id=smoke >
+        while (index < html.size() && html[index] != quote && html[index] != '>') {
             attrValue += html[index];
             index++;
         }
         attributes[attrName] = attrValue;
-        index++;
+        
+        if (html[index] != '>')
+            index++;
 
         while (index < html.size() && isspace(html[index])) index++;
     }

@@ -33,6 +33,7 @@ std::string sendHTTPRequest(std::string test_url, Output* output) {
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl, CURLOPT_URL, test_url.c_str());
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeChunk);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &response);
 
