@@ -1,14 +1,5 @@
 #include "main.h"
-#include <curl/curl.h>
-#include <malloc.h>
 #include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct {
-    char *string;
-    size_t size;
-} Response;
 
 #define SCREEN_WIDTH  400
 #define SCREEN_HEIGHT 240
@@ -17,10 +8,9 @@ typedef struct {
 
 static u32 *SOC_buffer = NULL;
 s32 sock = -1, csock = -1;
-size_t writeChunk(void *data, size_t size, size_t nmemb, void *userdata);
+
 void failExit(const char *fmt, ...);
 void initSocketService();
-std::string sendHTTPRequest(std::string test_url, Output* output);
 
 int main() {
 	gfxInitDefault();
@@ -80,7 +70,7 @@ int main() {
 		// 	gui.staticTextEleMap[0].size = 0.25f;
 		// else if (gui.staticTextEleMap[0].size > 2.0f)
 		// 	gui.staticTextEleMap[0].size = 2.0f;
-        
+
 		gui.sceneRender();
 		gspWaitForVBlank();
 	}
@@ -88,22 +78,6 @@ int main() {
     gui.sceneExit();
 	gfxExit();
 	return 0;
-}
-
-size_t writeChunk(void *data, size_t size, size_t nmemb, void *userdata) {
-    size_t real_size = size * nmemb;
-
-    Response* response = (Response*) userdata;
-
-    char *ptr = (char*)realloc(response->string, response->size + real_size + 1);
-    if (ptr == NULL)
-        return -1;
-    
-    response->string = ptr;
-    memcpy(&(response->string[response->size]), data, real_size);
-    response->size += real_size;
-    response->string[response->size] = 0;
-    return real_size;
 }
 
 void failExit(const char *fmt, ...) {
@@ -136,41 +110,4 @@ void initSocketService() {
 		failExit("memalign: failed to allocate\n");
 	if ((ret = socInit(SOC_buffer, SOC_BUFFERSIZE)) != 0)
     	failExit("socInit: 0x%08X\n", (unsigned int)ret);
-}
-
-std::string sendHTTPRequest(std::string test_url, Output* output) {
-    CURL *curl;
-    CURLcode result;
-    curl = curl_easy_init();
-    std::stringstream debug;
-
-    if (curl == NULL) {
-        // output->print("HTTP request failed.");
-        return "";
-    }
-
-    Response response;
-    response.string = (char*)malloc(1);
-    response.size = 0;
-
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    curl_easy_setopt(curl, CURLOPT_URL, test_url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeChunk);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &response);
-
-    result = curl_easy_perform(curl);
-
-    if (result != CURLE_OK) {
-        debug << "Error: " << curl_easy_strerror(result);
-        // output->print(debug.str());
-        return "";
-    }
-    
-    debug << response.string;
-
-    curl_easy_cleanup(curl);
-
-    free(response.string);
-
-    return debug.str();
 }

@@ -31,7 +31,8 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=  source \
 				source/utility \
-				source/engine
+				source/engine \
+				source/network
 DATA		:=	data
 INCLUDES	:=	include
 
