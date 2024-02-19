@@ -36,6 +36,7 @@ private:
     std::string extractTagName();
     std::unordered_map<std::string, std::string> extractAttributes();
     bool isSelfClosingTag(const std::string& tag) const;
+    bool isWhitespace(char c);
 };
 
 #endif

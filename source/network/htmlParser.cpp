@@ -36,7 +36,20 @@ void HTMLParser::parseElement(HTMLElement* parent) {
                 parseElement(child);
             }
         } else {
-            index++;
+            std::string innerText = "";
+            while (index < html.size() && html[index] != '<') {
+                innerText += html[index];
+                index++;
+            }
+
+            std::size_t found = innerText.find_last_not_of(" \t\f\v\n\r>");
+            if (found!=std::string::npos)
+                innerText.erase(found+1);
+            else
+                innerText.clear();            // str is all whitespace
+
+            if (!innerText.empty())
+                parent->text += innerText;
         }
     }
 }
@@ -92,6 +105,10 @@ std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
     return attributes;
 }
 
+bool HTMLParser::isWhitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v';
+}
+
 bool HTMLParser::isSelfClosingTag(const std::string& tag) const {
     // List of self-closing tags
     static const std::unordered_set<std::string> selfClosingTags = {
@@ -116,6 +133,7 @@ void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {
     for (const auto& attr : root->attributes) {
         this->stream << " " << attr.first << "=\"" << attr.second << "\"";
     }
+
     this->stream << ">" << "\n";
 
     // Render children
@@ -123,7 +141,8 @@ void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {
         renderHTMLTree(output, child, depth + 1);
     }
 
-    // this->stream << root->text;
+    if (!root->text.empty())
+        this->stream << "[" << root->text << "]\n";
 
     // Print closing tag
     for (int i = 0; i < depth; ++i) {
