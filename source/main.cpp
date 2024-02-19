@@ -4,9 +4,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <chrono>
-#include <thread>
-#include <citro2d.h>
 
 typedef struct {
     char *string;
@@ -25,100 +22,12 @@ void failExit(const char *fmt, ...);
 void initSocketService();
 std::string sendHTTPRequest(std::string test_url, Output* output);
 
-void scroll_down(Output* output) {
-    output->setRowStart(output->getRowStart()-1);
-    output->printAll();
-}
-void scroll_up(Output* output) {
-    output->setRowStart(output->getRowStart()+1);
-    output->printAll();
-}
-
-u32 clrRed   = C2D_Color32(0xFF, 0x00, 0x00, 0xFF);
-u32 clrBlue  = C2D_Color32(0x00, 0x00, 0xFF, 0xFF);
-// const char teststring[] =
-// 	"Hello World - now with citro2d!\n"
-// 	"The quick brown fox jumps over the lazy dog.\n"
-// 	"\n"
-// 	"En français: Vous ne devez pas éteindre votre console.\n"
-// 	"日本語文章を見せるのも出来ますよ。\n"
-// 	"Un poco de texto en español nunca queda mal.\n"
-// 	"Πού είναι η τουαλέτα;\n"
-// 	"Я очень рад, ведь я, наконец, возвращаюсь домой\n";
-    
-typedef struct {
-    C2D_Text staticText;
-    char* str;
-} StaticTextElement;
-
-std::vector<StaticTextElement> staticTextEleMap;
-C2D_TextBuf g_staticBuf, g_dynamicBuf;
-
-// add to text buffer;
-void addStaticTextElement(char* str) {
-    C2D_Text staticText;
-
-    StaticTextElement newStaticTextElement;
-    newStaticTextElement.staticText = staticText;
-    newStaticTextElement.str = str;
-
-    staticTextEleMap.push_back(newStaticTextElement);
-}
-
-static void sceneInit(char* textToDisplay)
-{
-	// Create two text buffers: one for static text, and another one for
-	// dynamic text - the latter will be cleared at each frame.
-	g_staticBuf  = C2D_TextBufNew(4096); // support up to 4096 glyphs in the buffer
-	g_dynamicBuf = C2D_TextBufNew(4096);
-
-    for (int i = 0; i < (int)staticTextEleMap.size(); i++) {
-        C2D_TextParse(&staticTextEleMap[i].staticText, g_staticBuf, staticTextEleMap[i].str);
-        C2D_TextOptimize(&staticTextEleMap[i].staticText);
-    }
-}
-
-static void sceneRender(float size)
-{
-	// Clear the dynamic text buffer
-	C2D_TextBufClear(g_dynamicBuf);
-
-	// Draw static text strings
-
-    for (int i = 0; i < (int)staticTextEleMap.size(); i++) {
-        C2D_DrawText(&staticTextEleMap[i].staticText, 0, 8.0f, 8.0f, 0.5f, size, size);
-    }
-
-    // Draw boxes;
-    C2D_DrawRectSolid(50, 0, 0, 50, 50, clrRed);
-    // C2D_DrawRectangle(0, 0, 0, 50, 50, clrRed, clrRed, clrRed, clrRed);
-
-	// Generate and draw dynamic text
-	char buf[160];
-	C2D_Text dynText;
-	snprintf(buf, sizeof(buf), "Current text size: %f (Use  to change)", size);
-	C2D_TextParse(&dynText, g_dynamicBuf, buf);
-	C2D_TextOptimize(&dynText);
-	C2D_DrawText(&dynText, C2D_AlignCenter, 200.0f, 220.0f, 0.5f, 0.5f, 0.5f);
-}
-
-static void sceneExit(void)
-{
-	// Delete the text buffers
-	C2D_TextBufDelete(g_dynamicBuf);
-	C2D_TextBufDelete(g_staticBuf);
-}
-
 int main() {
 	gfxInitDefault();
-	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
-	C2D_Prepare();
-
-    C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 
     Output output;
 	Engine::Core core(&output);
+    GUI gui;
 
 	consoleSelect(consoleInit(GFX_BOTTOM, NULL));
     initSocketService();
@@ -133,12 +42,9 @@ int main() {
     std::string response = sendHTTPRequest(url, &output);
     char *cstr = new char[response.length() + 1];
     strcpy(cstr, response.c_str());
-
-    u32 clrClear = C2D_Color32(0xFF, 0xD8, 0xB0, 0x68);
     
-    addStaticTextElement(cstr);
-    sceneInit(cstr);
-    float size = 0.5f;
+    gui.addStaticTextElement(cstr);
+    gui.sceneInit();
 
 	while (aptMainLoop()){
 		hidScanInput();
@@ -154,43 +60,32 @@ int main() {
 		}
         else if ((downEvent & KEY_UP) || (heldEvent & KEY_UP)){;
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the delay as needed
-            scroll_up(&output);
+            output.scroll_up();
 		}
         else if ((downEvent & KEY_DOWN) || (heldEvent & KEY_DOWN)){;
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the delay as needed
-            scroll_down(&output);
+            output.scroll_down();
 		}
         
-        if (heldEvent & KEY_L)
-			size -= 1.0f/128;
-		else if (heldEvent & KEY_R)
-			size += 1.0f/128;
-		else if (heldEvent & KEY_X)
-			size = 0.5f;
-		else if (heldEvent & KEY_Y)
-			size = 1.0f;
+        // if (heldEvent & KEY_L)
+		// 	gui.staticTextEleMap[0].size -= 1.0f/128;
+		// else if (heldEvent & KEY_R)
+		// 	gui.staticTextEleMap[0].size += 1.0f/128;
+		// else if (heldEvent & KEY_X)
+		// 	gui.staticTextEleMap[0].size = 0.5f;
+		// else if (heldEvent & KEY_Y)
+		// 	gui.staticTextEleMap[0].size = 1.0f;
 
-		if (size < 0.25f)
-			size = 0.25f;
-		else if (size > 2.0f)
-			size = 2.0f;
-
-        // Render the scene
-		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-		C2D_TargetClear(top, clrClear);
-		C2D_SceneBegin(top);
+		// if (gui.staticTextEleMap[0].size < 0.25f)
+		// 	gui.staticTextEleMap[0].size = 0.25f;
+		// else if (gui.staticTextEleMap[0].size > 2.0f)
+		// 	gui.staticTextEleMap[0].size = 2.0f;
         
-		sceneRender(size);
-
-		C3D_FrameEnd(0);
-
+		gui.sceneRender();
 		gspWaitForVBlank();
 	}
 	
-    sceneExit();
-
-    C2D_Fini();
-	C3D_Fini();
+    gui.sceneExit();
 	gfxExit();
 	return 0;
 }

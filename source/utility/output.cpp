@@ -79,3 +79,12 @@ void Output::setReverseFlag(const bool value){
 bool Output::getReverseFlag() const {
 	return this->inReverse;
 }
+
+void Output::scroll_down() {
+    this->setRowStart(this->getRowStart()-1);
+    this->printAll();
+}
+void Output::scroll_up() {
+    this->setRowStart(this->getRowStart()+1);
+    this->printAll();
+}
