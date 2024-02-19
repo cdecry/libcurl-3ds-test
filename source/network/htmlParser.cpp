@@ -13,12 +13,7 @@ void HTMLParser::parseElement(HTMLElement* parent) {
     while (index < html.size()) {
         if (html[index] == '<') {
             if (html[index + 1] == '!') {
-                // doctype or comment
-                index += 2;
-                if (html.substr(index, 8) == "DOCTYPE" || html.substr(index, 8) == "doctype") {
-                    while (index < html.size() && html[index] != '>') index++;
-                    index++;
-                }
+                while (index < html.size() && html[index] != '>') index++;
             } else if (html[index + 1] == '/') {
                 // closing tag
                 index += 2;
@@ -173,4 +168,16 @@ void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {
         this->stream << "  ";
     }
     this->stream << "</" << root->tag << ">" << "\n";
+}
+
+void HTMLParser::traverseHTMLElement(HTMLElement* element) {
+    // Print text if present
+    if (!element->text.empty()) {
+        this->stream << element->text << "\n";
+    }
+
+    // Traverse children
+    for (auto child : element->children) {
+        traverseHTMLElement(child);
+    }
 }

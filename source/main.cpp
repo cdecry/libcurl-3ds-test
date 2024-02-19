@@ -16,14 +16,16 @@ int main() {
 
     output.print("Test parsing HTML.\n");
 
-    std::string html = "<html><meta /><meta/><body><h1>Welcome.</h1><p></p></body></html>";
-    
     std::string response = sendHTTPRequest(url, &output);
 
     HTMLParser parser(response);
     HTMLElement* root = parser.parse();
     parser.renderHTMLTree(&output, root);
     output.print(parser.stream.str());
+
+    // parser.stream.str("");
+    // parser.traverseHTMLElement(root);
+    // output.print(parser.stream.str());
 
     char *cstr = new char[response.length() + 1];
     strcpy(cstr, response.c_str());
