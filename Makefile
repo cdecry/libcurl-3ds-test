@@ -32,10 +32,9 @@ BUILD		:=	build
 SOURCES		:=  source \
 				source/utility \
 				source/engine \
-				source/network
+				source/network \
 DATA		:=	data
 INCLUDES	:=	include
-
 NO_SMDH		:= no
 #ROMFS		:=	romfs
 

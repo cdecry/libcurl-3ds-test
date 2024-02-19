@@ -14,10 +14,17 @@ int main() {
     std::string url = "https://example.com";
     std::stringstream s;
 
-    output.print("Testing GUI.\n");
+    output.print("Test parsing HTML.\n");
 
-    std::string response = sendHTTPRequest(url, &output);
+    std::string html = "<!doctype html><html><body><h1>Hello, World!</h1><p>This is a paragraph.</p></body></html>";
     
+    std::string response = sendHTTPRequest(url, &output);
+
+    HTMLParser parser(response);
+    HTMLElement* root = parser.parse();
+    parser.renderHTMLTree(&output, root);
+    output.print(parser.stream.str());
+
     char *cstr = new char[response.length() + 1];
     strcpy(cstr, response.c_str());
     gui.addStaticTextElement(cstr);

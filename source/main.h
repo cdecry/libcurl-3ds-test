@@ -9,6 +9,7 @@
 #include "utility/gui.h"
 #include "network/crl.h"
 #include "network/socketService.h"
+#include "network/htmlParser.h"
 #include "engine/core.h"
 
 #endif
