@@ -29,6 +29,8 @@ void HTMLParser::parseElement(HTMLElement* parent) {
                 HTMLElement* child = new HTMLElement;
                 parseTag(child);
                 parent->children.push_back(child);
+                if (isSelfClosingTag(child->tag)) {
+                    continue;
                 parseElement(child);
             }
         } else {
@@ -54,9 +56,11 @@ std::string HTMLParser::extractTagName() {
     return tagName;
 }
 
+// <meta charset="utf8"/>
+
 std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
     std::unordered_map<std::string, std::string> attributes;
-    while (index < html.size() && html[index] != '>') {
+    while (index < html.size() && html[index] != '>' && html[index] != '/') {
         std::string attrName;
         std::string attrValue;
         while (index < html.size() && isspace(html[index])) index++;
@@ -75,7 +79,18 @@ std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
         attributes[attrName] = attrValue;
         index++;
     }
+    if (html[index] != '/')
+        index++;
     return attributes;
+}
+
+bool HTMLParser::isSelfClosingTag(const std::string& tag) const {
+    // List of self-closing tags
+    static const std::unordered_set<std::string> selfClosingTags = {
+        "area", "base", "br", "col", "embed", "hr", "img", "input",
+        "link", "meta", "param", "source", "track", "wbr"
+    };
+    return selfClosingTags.count(tag) > 0;
 }
 
 void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {

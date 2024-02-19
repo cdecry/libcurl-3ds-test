@@ -4,6 +4,7 @@
 #include "../utility/common.h"
 #include "../utility/output.h"
 #include <unordered_map>
+#include <unordered_set>
 
 struct HTMLElement {
     std::string tag;
@@ -33,6 +34,7 @@ private:
     void parseTag(HTMLElement* element);
     std::string extractTagName();
     std::unordered_map<std::string, std::string> extractAttributes();
+    bool isSelfClosingTag(const std::string& tag) const;
 };
 
 #endif
