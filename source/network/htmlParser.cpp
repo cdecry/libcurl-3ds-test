@@ -36,6 +36,22 @@ void HTMLParser::parseElement(HTMLElement* parent) {
                 parseElement(child);
             }
         } else {
+            // skip style tag content (needs to be parsed into style obj)
+            // skip script tag content
+            if (parent->tag == "style") {
+                index++;
+                continue;
+            }
+            else if (parent->tag == "script") {
+                // while (index +8 < html.size() && html.substr(index, 9) != "</script>") index++;
+                // continue;
+                size_t found = html.find("</script>", index);
+                if (found!=std::string::npos) {
+                    index = found;
+                    continue;
+                }
+            }
+
             std::string innerText = "";
             while (index < html.size() && html[index] != '<') {
                 innerText += html[index];
@@ -46,7 +62,7 @@ void HTMLParser::parseElement(HTMLElement* parent) {
             if (found!=std::string::npos)
                 innerText.erase(found+1);
             else
-                innerText.clear();            // str is all whitespace
+                innerText.clear();
 
             if (!innerText.empty())
                 parent->text += innerText;

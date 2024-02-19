@@ -11,7 +11,7 @@ int main() {
 	consoleSelect(consoleInit(GFX_BOTTOM, NULL));
     socketService.initSocketService();
     
-    std::string url = "https://example.com";
+    std::string url = "https://www.google.com";
     std::stringstream s;
 
     output.print("Test parsing HTML.\n");
