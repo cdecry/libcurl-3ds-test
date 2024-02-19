@@ -8,6 +8,7 @@
 
 struct HTMLElement {
     std::string tag;
+    std::string text;
     std::unordered_map<std::string, std::string> attributes;
     std::unordered_map<std::string, std::string> styles;
     std::vector<HTMLElement*> children;

@@ -8,6 +8,7 @@ HTMLElement* HTMLParser::parse() {
     return root;
 }
 
+// <body><p>hi</p></body>
 void HTMLParser::parseElement(HTMLElement* parent) {
     while (index < html.size()) {
         if (html[index] == '<') {
@@ -29,7 +30,8 @@ void HTMLParser::parseElement(HTMLElement* parent) {
                 HTMLElement* child = new HTMLElement;
                 parseTag(child);
                 parent->children.push_back(child);
-                if (isSelfClosingTag(child->tag)) {
+
+                if (isSelfClosingTag(child->tag))
                     continue;
                 parseElement(child);
             }
@@ -49,14 +51,14 @@ void HTMLParser::parseTag(HTMLElement* element) {
 
 std::string HTMLParser::extractTagName() {
     std::string tagName;
-    while (index < html.size() && !isspace(html[index]) && html[index] != '>') {
+    while (index < html.size() && !isspace(html[index]) && html[index] != '/' && html[index] != '>') {
         tagName += html[index];
         index++;
     }
     return tagName;
 }
 
-// <meta charset="utf8"/>
+// <meta />
 
 std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
     std::unordered_map<std::string, std::string> attributes;
@@ -64,6 +66,10 @@ std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
         std::string attrName;
         std::string attrValue;
         while (index < html.size() && isspace(html[index])) index++;
+
+        if (html[index] == '/')
+            break;
+
         while (index < html.size() && html[index] != '=' && !isspace(html[index]) && html[index] != '>') {
             attrName += html[index];
             index++;
@@ -78,9 +84,11 @@ std::unordered_map<std::string, std::string> HTMLParser::extractAttributes() {
         }
         attributes[attrName] = attrValue;
         index++;
+
+        while (index < html.size() && isspace(html[index])) index++;
     }
-    if (html[index] != '/')
-        index++;
+    if (html[index] == '/')
+        index ++;
     return attributes;
 }
 
@@ -114,6 +122,8 @@ void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {
     for (auto child : root->children) {
         renderHTMLTree(output, child, depth + 1);
     }
+
+    // this->stream << root->text;
 
     // Print closing tag
     for (int i = 0; i < depth; ++i) {

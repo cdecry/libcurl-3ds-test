@@ -16,11 +16,11 @@ int main() {
 
     output.print("Test parsing HTML.\n");
 
-    std::string html = "<!doctype html><html><head><meta charset=\"utf-8\"/><meta http-equiv=\"Content-type\"/></head><body><h1>Hello, World!</h1><p>This is a paragraph.</p></body></html>";
+    std::string html = "<html><meta /><meta/><body><h1>Welcome.</h1><p></p></body></html>";
     
     std::string response = sendHTTPRequest(url, &output);
 
-    HTMLParser parser(html);
+    HTMLParser parser(response);
     HTMLElement* root = parser.parse();
     parser.renderHTMLTree(&output, root);
     output.print(parser.stream.str());
