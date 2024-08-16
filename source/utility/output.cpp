@@ -13,6 +13,11 @@ std::vector<std::string> splitMessageIntoLines(const std::string& message) {
     std::istringstream iss(message);
     std::string line;
     while (std::getline(iss, line)) {
+        // If the line is longer than 40, split it.
+        while (line.length() > 40) {
+            lines.push_back(line.substr(0, 40));
+            line = line.substr(40);
+        }
         lines.push_back(line);
     }
     return lines;
