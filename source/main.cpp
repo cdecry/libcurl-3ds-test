@@ -52,6 +52,7 @@ int main() {
 	Engine::Core core(&output);
     SocketService socketService;
     GUI gui;
+    Keyboard keyboard;
 
 	consoleSelect(consoleInit(GFX_BOTTOM, NULL));
     socketService.initSocketService();
@@ -69,7 +70,7 @@ int main() {
     parser.renderTextContent(&output, root);
 
     // raw html
-    output.print(parser.stream.str());
+    // output.print(parser.stream.str());
 
     char *cstr = new char[parser.stream.str().length() + 1];
     strcpy(cstr, parser.stream.str().c_str());
@@ -83,19 +84,33 @@ int main() {
 		hidScanInput();
 		u32 downEvent = hidKeysDown();
 		u32 heldEvent = hidKeysHeld();
+
+        std::string inputText;
+        SwkbdButton button = SWKBD_BUTTON_NONE;
+
 		if ((downEvent & KEY_START) || (heldEvent & KEY_START)){
             socExit();
 			break;
 		}
-        else if (downEvent & KEY_B){;
+        else if (downEvent & KEY_A) {
+            keyboard.init(SWKBD_TYPE_NORMAL, 3);
+            keyboard.setHintText("input website url");
+            keyboard.setButtons("test", "test2", "go!");
+            button = keyboard.getInput(inputText);
+
+            if (button != SWKBD_BUTTON_NONE) {
+                output.print("You entered: " + inputText + "\n");
+            }
+        }
+        else if (downEvent & KEY_B) {
 			output.setReverseFlag(!output.getReverseFlag());
 			output.printAll();
 		}
-        else if ((downEvent & KEY_UP) || (heldEvent & KEY_UP)){;
+        else if ((downEvent & KEY_UP) || (heldEvent & KEY_UP)){
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the delay as needed
             output.scroll_up();
 		}
-        else if ((downEvent & KEY_DOWN) || (heldEvent & KEY_DOWN)){;
+        else if ((downEvent & KEY_DOWN) || (heldEvent & KEY_DOWN)){
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the delay as needed
             output.scroll_down();
 		}

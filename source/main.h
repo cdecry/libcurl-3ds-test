@@ -11,5 +11,6 @@
 #include "network/socketService.h"
 #include "network/htmlParser.h"
 #include "engine/core.h"
+#include "engine/keyboard.h"
 
 #endif
