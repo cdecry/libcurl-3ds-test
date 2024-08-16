@@ -24,6 +24,4 @@ static inline std::string text(int row, int column, std::string message, int col
 	return ss.str();
 }
 
-
-
 #endif

@@ -1,48 +1,37 @@
 #include "main.h"
 
-/* Split string to lines for teeny 3ds screen.
-   This is a function used for debugging the raw HTML returned. */
-char* split_text_to_lines(const std::string& text, int max_chars_per_line) {
-    std::istringstream stream(text);
-    std::string word;
-    std::string line;
-    std::string combinedText;
+// Function to convert user input into a valid URL
+std::string formatURL(const std::string& input, size_t mode = 0) {
+    std::string url = input;
 
-    while (stream >> word) {
-        if (line.length() + word.length() + 1 <= max_chars_per_line) {
-            // Word fits within the line
-            if (!line.empty()) {
-                line += " ";
-            }
-            line += word;
-        } else {
-            // Word doesn't fit; add the current line to combinedText
-            if (!line.empty()) {
-                combinedText += line + "\n";
-                line.clear();
-            }
-            
-            // Check if the word itself is longer than max_chars_per_line
-            while (word.length() > max_chars_per_line) {
-                combinedText += word.substr(0, max_chars_per_line) + "\n";
-                word = word.substr(max_chars_per_line);
-            }
-            
-            // Start the next line with the remainder of the word
-            line = word;
+    // Check if the input starts with "http://" or "https://"
+    if (url.substr(0, 7) != "http://" && url.substr(0, 8) != "https://") {
+        if (mode == 0) {
+            url = "https://www." + url;
+        } else if (mode == 1) {
+            url = "https://" + url;
         }
     }
 
-    // Add the last line if there's any remaining text
-    if (!line.empty()) {
-        combinedText += line;
-    }
+    return url;
+}
 
-    // Allocate memory for the char* and copy the combinedText into it
-    char* cstr = new char[combinedText.length() + 1];
-    strcpy(cstr, combinedText.c_str());
+size_t fetchAndRenderContent(const std::string& url, Output& output, GUI& gui) {
+    // Fetch the new URL content
+    std::string response = sendHTTPRequest(url, &output);
 
-    return cstr;
+    // Parse the HTML content
+    HTMLParser parser(response);
+    HTMLElement* root = parser.parse();
+    parser.renderTextContent(&output, root);
+
+    // Add dynamic text (todo)
+    std::string src = parser.stream.str();
+    const char * cstr = src.c_str();
+    gui.setDynamicText(cstr);
+    output.print(std::to_string(strlen(cstr)));
+
+    return strlen(cstr);
 }
 
 int main() {
@@ -56,28 +45,9 @@ int main() {
 
 	consoleSelect(consoleInit(GFX_BOTTOM, NULL));
     socketService.initSocketService();
-    
-    std::string url = "https://gamefaqs.gamespot.com/boards/641334-zero-escape-virtues-last-reward/68077218";
-    std::stringstream s;
 
-    output.print("Test parsing HTML.\n");
-
-    std::string response = sendHTTPRequest(url, &output);
-
-    HTMLParser parser(response);
-    HTMLElement* root = parser.parse();
-    // parser.renderHTMLTree(&output, root);
-    parser.renderTextContent(&output, root);
-
-    // raw html
-    // output.print(parser.stream.str());
-
-    char *cstr = new char[parser.stream.str().length() + 1];
-    strcpy(cstr, parser.stream.str().c_str());
-    cstr = split_text_to_lines(cstr, 40);
-
-    // render
-    gui.addStaticTextElement(cstr);
+    output.print("Press A to enter a URL.\n");
+    gui.setDynamicText("no website");
     gui.sceneInit();
 
 	while (aptMainLoop()){
@@ -99,7 +69,13 @@ int main() {
             button = keyboard.getInput(inputText);
 
             if (button != SWKBD_BUTTON_NONE) {
-                output.print("You entered: " + inputText + "\n");
+                std::string validURL = formatURL(inputText);
+                output.print("Browsing " + validURL + "...\n");
+                if (fetchAndRenderContent(validURL, output, gui) <= 22) {
+                    validURL = formatURL(inputText, 1);
+                    output.print("Browsing " + validURL + "...\n");
+                    fetchAndRenderContent(validURL, output, gui);
+                };
             }
         }
         else if (downEvent & KEY_B) {
@@ -114,20 +90,6 @@ int main() {
             std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Adjust the delay as needed
             output.scroll_down();
 		}
-        
-        // if (heldEvent & KEY_L)
-		// 	gui.staticTextEleMap[0].size -= 1.0f/128;
-		// else if (heldEvent & KEY_R)
-		// 	gui.staticTextEleMap[0].size += 1.0f/128;
-		// else if (heldEvent & KEY_X)
-		// 	gui.staticTextEleMap[0].size = 0.5f;
-		// else if (heldEvent & KEY_Y)
-		// 	gui.staticTextEleMap[0].size = 1.0f;
-
-		// if (gui.staticTextEleMap[0].size < 0.25f)
-		// 	gui.staticTextEleMap[0].size = 0.25f;
-		// else if (gui.staticTextEleMap[0].size > 2.0f)
-		// 	gui.staticTextEleMap[0].size = 2.0f;
 
 		gui.sceneRender();
 		gspWaitForVBlank();

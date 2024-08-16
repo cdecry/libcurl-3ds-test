@@ -1,7 +1,5 @@
 #include "gui.h"
 
-#define MAX_BUF 4096
-
 void GUI::addStaticTextElement(char* str) {
     C2D_Text staticText;
 
@@ -10,6 +8,10 @@ void GUI::addStaticTextElement(char* str) {
     newStaticTextElement.str = str;
 
     staticTextEleMap.push_back(newStaticTextElement);
+}
+
+void GUI::clearStaticTextElements() {
+    staticTextEleMap.clear();  // Clears the vector, removing all elements
 }
 
 void GUI::sceneInit()
@@ -45,12 +47,10 @@ void GUI::sceneRender()
     }
     
 	// Generate and draw dynamic text
-	// char buf[160];
-	// C2D_Text dynText;
-	// snprintf(buf, sizeof(buf), "Current text size: %f (Use  to change)", size);
-	// C2D_TextParse(&dynText, g_dynamicBuf, buf);
-	// C2D_TextOptimize(&dynText);
-	// C2D_DrawText(&dynText, C2D_AlignCenter, 200.0f, 220.0f, 0.5f, 0.5f, 0.5f);
+	C2D_Text dynText;
+	C2D_TextParse(&dynText, g_dynamicBuf, dynamicText);
+	C2D_TextOptimize(&dynText);
+	C2D_DrawText(&dynText, 0, 8.0f, 8.0f, 0.5f, 0.5f, 0.5f);
 
     C3D_FrameEnd(0);
 }
@@ -63,4 +63,22 @@ void GUI::sceneExit(void)
 
     C2D_Fini();
 	C3D_Fini();
+}
+
+void GUI::setDynamicText(const char* src) {
+    // Ensure that the string can fit, including the null terminator
+    if (strlen(src) + 1 > MAX_BUF) {
+        return;
+    }
+
+    strcpy(dynamicText, src);
+}
+
+void GUI::appendToDynamicText(const char* src) {
+    // Ensure there's enough space to append the source string
+    if (strlen(dynamicText) + strlen(src) + 1 > MAX_BUF) {  // +1 for the null terminator
+        return;
+    }
+
+    strcat(dynamicText, src);
 }

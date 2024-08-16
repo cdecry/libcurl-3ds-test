@@ -176,7 +176,7 @@ void HTMLParser::renderTextContent(Output* output, HTMLElement* root, int depth)
     if (!root->text.empty() && (root->tag == "p" || root->tag == "span" || 
         root->tag == "div" || root->tag == "text" || root->tag == "h1" || 
         root->tag == "h2" || root->tag == "h3" || root->tag == "h4" || 
-        root->tag == "h5" || root->tag == "h6")) {
+        root->tag == "h5" || root->tag == "h6" || root->tag == "a")) {
 
         std::string textWithQuotes = root->text;
         size_t pos = 0;
