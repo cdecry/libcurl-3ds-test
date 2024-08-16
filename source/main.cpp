@@ -1,5 +1,50 @@
 #include "main.h"
 
+/* Split string to lines for teeny 3ds screen.
+   This is a function used for debugging the raw HTML returned. */
+char* split_text_to_lines(const std::string& text, int max_chars_per_line) {
+    std::istringstream stream(text);
+    std::string word;
+    std::string line;
+    std::string combinedText;
+
+    while (stream >> word) {
+        if (line.length() + word.length() + 1 <= max_chars_per_line) {
+            // Word fits within the line
+            if (!line.empty()) {
+                line += " ";
+            }
+            line += word;
+        } else {
+            // Word doesn't fit; add the current line to combinedText
+            if (!line.empty()) {
+                combinedText += line + "\n";
+                line.clear();
+            }
+            
+            // Check if the word itself is longer than max_chars_per_line
+            while (word.length() > max_chars_per_line) {
+                combinedText += word.substr(0, max_chars_per_line) + "\n";
+                word = word.substr(max_chars_per_line);
+            }
+            
+            // Start the next line with the remainder of the word
+            line = word;
+        }
+    }
+
+    // Add the last line if there's any remaining text
+    if (!line.empty()) {
+        combinedText += line;
+    }
+
+    // Allocate memory for the char* and copy the combinedText into it
+    char* cstr = new char[combinedText.length() + 1];
+    strcpy(cstr, combinedText.c_str());
+
+    return cstr;
+}
+
 int main() {
 	gfxInitDefault();
 
@@ -11,7 +56,7 @@ int main() {
 	consoleSelect(consoleInit(GFX_BOTTOM, NULL));
     socketService.initSocketService();
     
-    std::string url = "https://www.google.com";
+    std::string url = "https://gamefaqs.gamespot.com/boards/641334-zero-escape-virtues-last-reward/68077218";
     std::stringstream s;
 
     output.print("Test parsing HTML.\n");
@@ -20,15 +65,17 @@ int main() {
 
     HTMLParser parser(response);
     HTMLElement* root = parser.parse();
-    parser.renderHTMLTree(&output, root);
+    // parser.renderHTMLTree(&output, root);
+    parser.renderTextContent(&output, root);
+
+    // raw html
     output.print(parser.stream.str());
 
-    // parser.stream.str("");
-    // parser.traverseHTMLElement(root);
-    // output.print(parser.stream.str());
+    char *cstr = new char[parser.stream.str().length() + 1];
+    strcpy(cstr, parser.stream.str().c_str());
+    cstr = split_text_to_lines(cstr, 40);
 
-    char *cstr = new char[response.length() + 1];
-    strcpy(cstr, response.c_str());
+    // render
     gui.addStaticTextElement(cstr);
     gui.sceneInit();
 

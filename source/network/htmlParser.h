@@ -26,6 +26,7 @@ public:
     HTMLParser(const std::string& html);
     HTMLElement* parse();
     void renderHTMLTree(Output* output, HTMLElement* root, int depth = 0);
+    void renderTextContent(Output* output, HTMLElement* root, int depth = 0);
     void traverseHTMLElement(HTMLElement* element);
 
 private:

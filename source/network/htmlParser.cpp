@@ -170,6 +170,18 @@ void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {
     this->stream << "</" << root->tag << ">" << "\n";
 }
 
+void HTMLParser::renderTextContent(Output* output, HTMLElement* root, int depth) {
+    if (!root) return;
+
+    if (!root->text.empty())
+        this->stream << "[" << root->text << "]\n";
+
+    // Render children
+    for (auto child : root->children) {
+        renderTextContent(output, child, depth + 1);
+    }
+}
+
 void HTMLParser::traverseHTMLElement(HTMLElement* element) {
     // Print text if present
     if (!element->text.empty()) {
