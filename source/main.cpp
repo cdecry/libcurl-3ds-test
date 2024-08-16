@@ -70,10 +70,10 @@ int main() {
 
             if (button != SWKBD_BUTTON_NONE) {
                 std::string validURL = formatURL(inputText);
-                output.print("Browsing " + validURL + "...\n");
+                output.print("Fetching " + validURL + "...\n");
                 if (fetchAndRenderContent(validURL, output, gui) <= 22) {
                     validURL = formatURL(inputText, 1);
-                    output.print("Browsing " + validURL + "...\n");
+                    output.print("Fetching " + validURL + "...\n");
                     fetchAndRenderContent(validURL, output, gui);
                 };
             }

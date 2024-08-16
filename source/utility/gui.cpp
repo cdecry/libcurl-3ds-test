@@ -50,7 +50,7 @@ void GUI::sceneRender()
 	C2D_Text dynText;
 	C2D_TextParse(&dynText, g_dynamicBuf, dynamicText);
 	C2D_TextOptimize(&dynText);
-	C2D_DrawText(&dynText, 0, 8.0f, 8.0f, 0.5f, 0.5f, 0.5f);
+	C2D_DrawText(&dynText, 0, 2.0f, 2.0f, 0.5f, 0.4f, 0.4f);
 
     C3D_FrameEnd(0);
 }

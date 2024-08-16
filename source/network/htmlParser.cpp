@@ -195,7 +195,7 @@ void HTMLParser::renderTextContent(Output* output, HTMLElement* root, int depth)
     }
 
     // Add new line after end of div. don't allow triple new line.
-    if (root->tag == "div") {
+    if (root->tag == "div" && !this->stream.str().empty()) {
         const std::string& currentStream = this->stream.str();
         if (currentStream.size() < 2 || currentStream.substr(currentStream.size() - 2) != "\n\n") {
             this->stream << "\n";
