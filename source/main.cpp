@@ -1,11 +1,43 @@
 #include "main.h"
 
+bool hasPeriod(const std::string& str) {
+    for (char ch : str) {
+        if (ch == '.') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::string replaceSpacesWithPlus(const std::string& input) {
+    std::string result;
+    bool inSpace = false;
+
+    for (char ch : input) {
+        if (ch == ' ') {
+            if (!inSpace) {
+                result += '+';
+                inSpace = true;
+            }
+        } else {
+            result += ch;
+            inSpace = false;
+        }
+    }
+
+    return result;
+}
+
 // Function to convert user input into a valid URL
 std::string formatURL(const std::string& input, size_t mode = 0) {
     std::string url = input;
 
     // Check if the input starts with "http://" or "https://"
-    if (url.substr(0, 7) != "http://" && url.substr(0, 8) != "https://") {
+    if (!hasPeriod(url)) {
+        url = "https://www.google.ca/search?q=" + replaceSpacesWithPlus(url);
+    }
+    else if (url.substr(0, 7) != "http://" && url.substr(0, 8) != "https://") {
         if (mode == 0) {
             url = "https://www." + url;
         } else if (mode == 1) {
