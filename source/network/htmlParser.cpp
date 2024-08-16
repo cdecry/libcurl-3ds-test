@@ -173,12 +173,33 @@ void HTMLParser::renderHTMLTree(Output* output, HTMLElement* root, int depth) {
 void HTMLParser::renderTextContent(Output* output, HTMLElement* root, int depth) {
     if (!root) return;
 
-    if (!root->text.empty())
-        this->stream << "[" << root->text << "]\n";
+    if (!root->text.empty() && (root->tag == "p" || root->tag == "span" || 
+        root->tag == "div" || root->tag == "text" || root->tag == "h1" || 
+        root->tag == "h2" || root->tag == "h3" || root->tag == "h4" || 
+        root->tag == "h5" || root->tag == "h6")) {
+
+        std::string textWithQuotes = root->text;
+        size_t pos = 0;
+
+        while ((pos = textWithQuotes.find("&quot;", pos)) != std::string::npos) {
+            textWithQuotes.replace(pos, 6, "\"");
+            pos += 1;
+        }
+
+        this->stream << textWithQuotes << "\n";
+    }
 
     // Render children
     for (auto child : root->children) {
         renderTextContent(output, child, depth + 1);
+    }
+
+    // Add new line after end of div. don't allow triple new line.
+    if (root->tag == "div") {
+        const std::string& currentStream = this->stream.str();
+        if (currentStream.size() < 2 || currentStream.substr(currentStream.size() - 2) != "\n\n") {
+            this->stream << "\n";
+        }
     }
 }
 
